@@ -1,35 +1,70 @@
 /* ==========================================
-   GENERAL
+   RESET / BASE
 ========================================== */
 
+* {
+    box-sizing: border-box;
+}
+
 body {
-
-    background: #eef3f8;
-
-    font-family: Arial, Helvetica, sans-serif;
-
+    margin: 0;
+    background: #eef1f5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1f2937;
 }
 
-.card {
+.app {
+    max-width: 720px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: #eef1f5;
+}
 
-    border: none;
 
+/* ==========================================
+   HEADER
+========================================== */
+
+.app-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 22px 18px;
+    background: linear-gradient(135deg, #1e3a6e, #16305e);
+    color: #fff;
+}
+
+.app-header-icon {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 auto;
     border-radius: 12px;
-
+    background: #f59e0b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
 }
 
-.card-header {
-
-    background: #0d6efd !important;
-
-    color: white;
-
+.app-header-text h1 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 700;
 }
 
-.card-header h2 {
+.app-header-text p {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: #cbd8ee;
+}
 
-    font-weight: bold;
 
+/* ==========================================
+   BODY / LAYOUT
+========================================== */
+
+.app-body {
+    padding: 16px;
 }
 
 
@@ -37,24 +72,36 @@ body {
    SEARCH BOX
 ========================================== */
 
-#searchBox {
-
-    height: 60px;
-
-    font-size: 22px;
-
-    font-weight: 600;
-
-    border-radius: 10px;
-
+.search-row {
+    margin-bottom: 12px;
 }
 
-#searchBox:focus {
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid #dde3ec;
+    border-radius: 12px;
+    padding: 12px 14px;
+}
 
-    border: 2px solid #0d6efd;
+.search-icon {
+    color: #9aa5b1;
+    display: flex;
+}
 
-    box-shadow: 0px 0px 12px rgba(13,110,253,.35);
+.search-box input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    background: transparent;
+    color: #1f2937;
+}
 
+.search-box input::placeholder {
+    color: #9aa5b1;
 }
 
 
@@ -62,14 +109,25 @@ body {
    DOWNLOAD BUTTON
 ========================================== */
 
-#downloadBtn {
+.download-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #22c55e;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    cursor: pointer;
+}
 
-    height: 60px;
-
-    font-size: 18px;
-
-    font-weight: bold;
-
+.download-btn:hover {
+    background: #1ea852;
 }
 
 
@@ -77,238 +135,182 @@ body {
    SUMMARY
 ========================================== */
 
-#totalRecords {
-
-    color: #0d6efd;
-
-    font-weight: bold;
-
-}
-
-#resultCount {
-
-    color: red;
-
-    font-weight: bold;
-
-}
-
-
-/* ==========================================
-   TABLE
-========================================== */
-
-.table-container {
-
-    max-height: 700px;
-
-    overflow: auto;
-
-    border: 2px solid #0d6efd;
-
-    border-radius: 10px;
-
-    background: white;
-
-}
-
-#resultTable {
-
-    margin-bottom: 0;
-
-    white-space: nowrap;
-
-}
-
-#resultTable thead th {
-
-    position: sticky;
-
-    top: 0;
-
-    z-index: 20;
-
-    background: #0d6efd !important;
-
-    color: white;
-
-    text-align: center;
-
-    vertical-align: middle;
-
-}
-
-#resultTable tbody td {
-
-    text-align: center;
-
-    vertical-align: middle;
-
-}
-
-
-/* ==========================================
-   STICKY SLNO COLUMN
-========================================== */
-
-#resultTable th:first-child {
-
-    position: sticky;
-
-    left: 0;
-
-    z-index: 25;
-
-    background: #0d6efd !important;
-
-}
-
-#resultTable td:first-child {
-
-    position: sticky;
-
-    left: 0;
-
-    z-index: 10;
-
-    background: white;
-
-    font-weight: bold;
-
-}
-
-
-/* ==========================================
-   STICKY TRUCK COLUMN
-========================================== */
-
-#resultTable th:nth-child(5) {
-
-    position: sticky;
-
-    left: 70px;
-
-    z-index: 25;
-
-    background: #0d6efd !important;
-
-}
-
-#resultTable td:nth-child(5) {
-
-    position: sticky;
-
-    left: 70px;
-
-    z-index: 10;
-
-    background: white;
-
-    font-weight: bold;
-
-    color: #0d6efd;
-
-}
-
-
-/* ==========================================
-   TABLE BORDER
-========================================== */
-
-#resultTable td,
-#resultTable th {
-
-    border: 1px solid #6c757d !important;
-
-}
-
-
-/* ==========================================
-   ROW HOVER
-========================================== */
-
-#resultTable tbody tr:hover {
-
-    background: #d8ecff !important;
-
-    cursor: pointer;
-
-}
-
-
-/* ==========================================
-   MATCH COLORS
-========================================== */
-
-.table-warning {
-
-    background: #fff3b0 !important;
-
-}
-
-.table-success {
-
-    background: #dcfce7 !important;
-
-}
-
-.table-info {
-
-    background: #d7f1ff !important;
-
-}
-
-
-/* ==========================================
-   EXACT TRUCK NUMBER
-========================================== */
-
-.exact-match {
-
-    background: #FFD700;
-
-    color: black;
-
-    padding: 4px 10px;
-
-    border-radius: 5px;
-
-    font-weight: bold;
-
-    font-size: 17px;
-
-}
-
-
-/* ==========================================
-   PARTIAL MATCH
-========================================== */
-
-.partial-match {
-
-    background: #bbf7d0;
-
-    color: black;
-
-    padding: 4px 10px;
-
-    border-radius: 5px;
-
-    font-weight: bold;
-
-}
-
-
-/* ==========================================
-   STATUS BADGES
-========================================== */
-
-.badge {
-
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     font-size: 14px;
+    color: #475569;
+    margin-bottom: 14px;
+}
 
-    padding: 8px 12px;
+.summary-row #totalRecords {
+    color: #16305e;
+    font-weight: 700;
+}
 
+.summary-row #resultCount {
+    color: #ef4444;
+    font-weight: 700;
+}
+
+
+/* ==========================================
+   FILTER TABS
+========================================== */
+
+.tabs-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 16px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.tabs-row::-webkit-scrollbar {
+    display: none;
+}
+
+.tab-btn {
+    flex: 0 0 auto;
+    border: 1px solid #dde3ec;
+    background: #fff;
+    color: #475569;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.tab-btn.active {
+    background: #16305e;
+    border-color: #16305e;
+    color: #fff;
+}
+
+
+/* ==========================================
+   RESULT LIST / CARDS
+========================================== */
+
+.result-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.empty-state {
+    text-align: center;
+    color: #94a3b8;
+    padding: 40px 0;
+    font-size: 14px;
+}
+
+.truck-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.truck-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+}
+
+.truck-no {
+    font-size: 18px;
+    font-weight: 700;
+    color: #16305e;
+}
+
+.truck-index {
+    flex: 0 0 auto;
+    background: #e0ecff;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 999px;
+}
+
+.trailer-no {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+}
+
+.truck-card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 10px;
+    padding-top: 12px;
+    border-top: 1px solid #eef1f5;
+    margin-bottom: 12px;
+}
+
+.field-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.field-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.truck-card-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.status-badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 999px;
+}
+
+.status-in-transit {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.status-reached {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.status-loaded {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.status-pending {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+
+/* ==========================================
+   MATCH HIGHLIGHT
+========================================== */
+
+.truck-card.match-exact {
+    border: 2px solid #f59e0b;
 }
 
 
@@ -316,20 +318,8 @@ body {
    RESPONSIVE
 ========================================== */
 
-@media (max-width:768px) {
-
-    #searchBox {
-
-        font-size: 18px;
-
+@media (min-width: 600px) {
+    .truck-card-grid {
+        grid-template-columns: 1fr 1fr 1fr;
     }
-
-    #downloadBtn {
-
-        margin-top: 10px;
-
-        width: 100%;
-
-    }
-
 }
