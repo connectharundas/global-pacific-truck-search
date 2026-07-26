@@ -167,13 +167,9 @@ def search_excel(keyword, status_filter="All"):
 
         trailer = str(row.get("TRAILER", ""))
 
-        transportor = str(row.get("TRANSPORTOR", ""))
-
         truck_match = get_match_type(keyword, truck)
 
         trailer_match = get_match_type(keyword, trailer)
-
-        transport_match = get_match_type(keyword, transportor)
 
         # ==================================================
         # EXACT TRUCK MATCH
@@ -215,17 +211,6 @@ def search_excel(keyword, status_filter="All"):
         if trailer_match == "partial":
 
             partial_results.append(build_item(row, "partial", "TRAILER"))
-
-            continue
-
-
-        # ==================================================
-        # TRANSPORTOR MATCH
-        # ==================================================
-
-        if transport_match:
-
-            partial_results.append(build_item(row, "transportor", "TRANSPORTOR"))
 
             continue
 
@@ -306,13 +291,11 @@ def download():
 
         truck = normalize(row.get("TRUCK", ""))
         trailer = normalize(row.get("TRAILER", ""))
-        transportor = normalize(row.get("TRANSPORTOR", ""))
 
         if (
             keyword_normalized == ""
             or keyword_normalized in truck
             or keyword_normalized in trailer
-            or keyword_normalized in transportor
         ):
 
             export_rows.append(row.to_dict())
