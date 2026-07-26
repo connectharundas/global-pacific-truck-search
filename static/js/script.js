@@ -1,187 +1,142 @@
-$(document).ready(function () {
+document.addEventListener("DOMContentLoaded", function () {
 
-    // ============================
-    // LIVE SEARCH
-    // ============================
+    const searchBox = document.getElementById("searchBox");
+    const resultList = document.getElementById("resultList");
+    const resultCount = document.getElementById("resultCount");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const tabButtons = document.querySelectorAll(".tab-btn");
 
-    $("#searchBox").on("keyup", function () {
+    let currentStatus = "All";
+    let debounceTimer = null;
 
-        let keyword = $(this).val().trim();
+    const STATUS_CLASS = {
+        "In Transit": "status-in-transit",
+        "Reached": "status-reached",
+        "Loaded": "status-loaded",
+        "Pending": "status-pending"
+    };
 
-        if (keyword === "") {
+    function renderCards(rows) {
 
-            $("#tableBody").html(`
-                <tr>
-                    <td colspan="11" class="text-center">
-                        Search Truck Number...
-                    </td>
-                </tr>
-            `);
+        resultCount.textContent = rows.length;
 
-            $("#resultCount").text("0");
-
+        if (rows.length === 0) {
+            resultList.innerHTML = `<div class="empty-state">No Records Found</div>`;
             return;
         }
 
-        $.ajax({
+        let html = "";
 
-            url: "/search",
+        rows.forEach(function (row, index) {
 
-            type: "GET",
+            const status = row["COMPUTED_STATUS"] || "Pending";
+            const statusClass = STATUS_CLASS[status] || "status-pending";
+            const isExact = row["match_type"] === "exact";
 
-            data: {
-                q: keyword
-            },
-
-            success: function (data) {
-
-                $("#resultCount").text(data.length);
-
-                let html = "";
-
-                if (data.length === 0) {
-
-                    html = `
-                        <tr>
-                            <td colspan="11" class="text-center text-danger">
-                                No Records Found
-                            </td>
-                        </tr>
-                    `;
-
-                    $("#tableBody").html(html);
-
-                    return;
-                }
-
-                data.forEach(function (row) {
-
-                    let rowClass = "";
-
-                    if (row.match_type === "exact") {
-
-                        rowClass = "table-warning";
-
-                    } else if (row.match_type === "partial") {
-
-                        rowClass = "table-success";
-
-                    } else {
-
-                        rowClass = "table-info";
-
-                    }
-
-                    html += `<tr class="${rowClass}">`;
-
-                    html += `<td>${row["SLNO"] || ""}</td>`;
-
-                    html += `<td>${row["DOC RCVD DATE"] || ""}</td>`;
-
-                    html += `<td>${row["DRIVER NAME"] || ""}</td>`;
-
-                    html += `<td>${row["ID NO"] || ""}</td>`;
-
-                    // ============================
-                    // TRUCK NO HIGHLIGHT
-                    // ============================
-
-                    let truckNo = row["TRUCK NO"] || "";
-
-                    if (row.match_type === "exact") {
-
-                        truckNo = `<span class="exact-match">${truckNo}</span>`;
-
-                    } else if (row.match_type === "partial") {
-
-                        truckNo = `<span class="partial-match">${truckNo}</span>`;
-
-                    }
-
-                    html += `<td>${truckNo}</td>`;
-
-                    html += `<td>${row["TRAILER NO"] || ""}</td>`;
-
-                    html += `<td>${row["TRANSPORTOR"] || ""}</td>`;
-
-                    html += `<td>${row["SUB"] || ""}</td>`;
-
-                    // ============================
-                    // STATUS BADGE
-                    // ============================
-
-                    let status = row["STATUS"] || "";
-
-                    let statusClass = "bg-secondary";
-
-                    if (status.toUpperCase().includes("SUBMITTED")) {
-
-                        statusClass = "bg-primary";
-
-                    } else if (status.toUpperCase().includes("LOADED")) {
-
-                        statusClass = "bg-success";
-
-                    } else if (status.toUpperCase().includes("REACHED")) {
-
-                        statusClass = "bg-warning text-dark";
-
-                    }
-
-                    html += `
-                        <td>
-                            <span class="badge ${statusClass}">
-                                ${status}
-                            </span>
-                        </td>
-                    `;
-
-                    html += `<td>${row["REACHED"] || ""}</td>`;
-
-                    html += `<td>${row["LOADED"] || ""}</td>`;
-
-                    html += `</tr>`;
-
-                });
-
-                $("#tableBody").html(html);
-
-            },
-
-            error: function () {
-
-                $("#tableBody").html(`
-                    <tr>
-                        <td colspan="11" class="text-center text-danger">
-                            Error loading data.
-                        </td>
-                    </tr>
-                `);
-
-            }
+            html += `
+                <div class="truck-card${isExact ? " match-exact" : ""}">
+                    <div class="truck-card-top">
+                        <div class="truck-no">${row["TRUCK"] || ""}</div>
+                        <div class="truck-index">#${index + 1}</div>
+                    </div>
+                    <div class="trailer-no">Trailer ${row["TRAILER"] || "-"}</div>
+                    <div class="truck-card-grid">
+                        <div>
+                            <div class="field-label">Driver</div>
+                            <div class="field-value">${row["DRIVER NAME"] || "-"}</div>
+                        </div>
+                        <div>
+                            <div class="field-label">ID No</div>
+                            <div class="field-value">${row["ID NO"] || "-"}</div>
+                        </div>
+                        <div>
+                            <div class="field-label">Transporter</div>
+                            <div class="field-value">${row["TRANSPORTOR"] || "-"}</div>
+                        </div>
+                        <div>
+                            <div class="field-label">Sub</div>
+                            <div class="field-value">${row["SUB"] || "-"}</div>
+                        </div>
+                        <div>
+                            <div class="field-label">Doc Rcvd</div>
+                            <div class="field-value">${row["DOC RCVD DATE"] || "-"}</div>
+                        </div>
+                        <div>
+                            <div class="field-label">Reached</div>
+                            <div class="field-value">${row["REACHED"] || "-"}</div>
+                        </div>
+                    </div>
+                    <div class="truck-card-badges">
+                        <span class="status-badge ${statusClass}">${status}</span>
+                    </div>
+                </div>
+            `;
 
         });
 
+        resultList.innerHTML = html;
+    }
+
+    function fetchResults() {
+
+        const keyword = searchBox.value.trim();
+
+        fetch(`/search?q=${encodeURIComponent(keyword)}&status=${encodeURIComponent(currentStatus)}`)
+            .then(function (res) {
+                return res.json();
+            })
+            .then(function (data) {
+                renderCards(data);
+            })
+            .catch(function () {
+                resultList.innerHTML = `<div class="empty-state">Error loading data.</div>`;
+            });
+    }
+
+    // ============================
+    // LIVE SEARCH (debounced)
+    // ============================
+
+    searchBox.addEventListener("input", function () {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(fetchResults, 200);
+    });
+
+    // ============================
+    // FILTER TABS
+    // ============================
+
+    tabButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            tabButtons.forEach(function (b) {
+                b.classList.remove("active");
+            });
+            btn.classList.add("active");
+            currentStatus = btn.dataset.status;
+            fetchResults();
+        });
     });
 
     // ============================
     // DOWNLOAD BUTTON
     // ============================
 
-    $("#downloadBtn").click(function () {
+    downloadBtn.addEventListener("click", function () {
 
-        let keyword = $("#searchBox").val().trim();
+        const keyword = searchBox.value.trim();
 
-        if (keyword === "") {
-
-            alert("Please enter a Truck No, Trailer No or Transportor.");
-
+        if (keyword === "" && currentStatus === "All") {
+            alert("Please enter a search term or select a filter.");
             return;
-
         }
 
-        window.location.href = "/download?q=" + encodeURIComponent(keyword);
-
+        window.location.href = `/download?q=${encodeURIComponent(keyword)}&status=${encodeURIComponent(currentStatus)}`;
     });
+
+    // ============================
+    // INITIAL LOAD
+    // ============================
+
+    fetchResults();
 
 });

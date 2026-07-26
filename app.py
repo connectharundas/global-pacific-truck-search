@@ -10,22 +10,24 @@ app = Flask(__name__)
 # CONFIGURATION
 # ==========================================================
 
-EXCEL_FILE = "data/trucks.xlsx"
+EXCEL_FILE = "data/sampledata.xlsx"
 
 # Columns shown in the website
 DISPLAY_COLUMNS = [
-    "SLNO",
+    "SL NO",
     "DOC RCVD DATE",
     "DRIVER NAME",
     "ID NO",
-    "TRUCK NO",
-    "TRAILER NO",
+    "TRUCK",
+    "TRAILER",
     "TRANSPORTOR",
     "SUB",
     "STATUS",
     "REACHED",
     "LOADED"
 ]
+
+STATUS_TABS = ["All", "In Transit", "Reached", "Loaded", "Pending"]
 
 
 # ==========================================================
@@ -94,12 +96,52 @@ def get_match_type(keyword, value):
 
 
 # ==========================================================
-# SEARCH EXCEL
+# COMPUTED STATUS (drives badges + filter tabs)
 # ==========================================================
 
-def search_excel(keyword):
+def compute_status(row):
 
-    keyword = normalize(keyword)
+    if str(row.get("LOADED", "")).strip():
+        return "Loaded"
+
+    if str(row.get("REACHED", "")).strip():
+        return "Reached"
+
+    if str(row.get("STATUS", "")).strip().upper() == "SUBMITTED":
+        return "In Transit"
+
+    return "Pending"
+
+
+# ==========================================================
+# BUILD DISPLAY ITEM
+# ==========================================================
+
+def build_item(row, match_type=None, matched_column=None):
+
+    item = {}
+
+    for col in DISPLAY_COLUMNS:
+        item[col] = row.get(col, "")
+
+    item["COMPUTED_STATUS"] = compute_status(row)
+
+    if match_type:
+        item["match_type"] = match_type
+
+    if matched_column:
+        item["matched_column"] = matched_column
+
+    return item
+
+
+# ==========================================================
+# SEARCH + FILTER EXCEL
+# ==========================================================
+
+def search_excel(keyword, status_filter="All"):
+
+    keyword_normalized = normalize(keyword)
 
     df = load_excel()
 
@@ -112,9 +154,18 @@ def search_excel(keyword):
 
     for _, row in df.iterrows():
 
-        truck = str(row.get("TRUCK NO", ""))
+        if status_filter != "All" and compute_status(row) != status_filter:
+            continue
 
-        trailer = str(row.get("TRAILER NO", ""))
+        if keyword_normalized == "":
+
+            exact_results.append(build_item(row))
+
+            continue
+
+        truck = str(row.get("TRUCK", ""))
+
+        trailer = str(row.get("TRAILER", ""))
 
         transportor = str(row.get("TRANSPORTOR", ""))
 
@@ -123,21 +174,14 @@ def search_excel(keyword):
         trailer_match = get_match_type(keyword, trailer)
 
         transport_match = get_match_type(keyword, transportor)
-                # ==================================================
+
+        # ==================================================
         # EXACT TRUCK MATCH
         # ==================================================
 
         if truck_match == "exact":
 
-            item = {}
-
-            for col in DISPLAY_COLUMNS:
-                item[col] = row.get(col, "")
-
-            item["match_type"] = "exact"
-            item["matched_column"] = "TRUCK NO"
-
-            exact_results.append(item)
+            exact_results.append(build_item(row, "exact", "TRUCK"))
 
             continue
 
@@ -148,15 +192,7 @@ def search_excel(keyword):
 
         if trailer_match == "exact":
 
-            item = {}
-
-            for col in DISPLAY_COLUMNS:
-                item[col] = row.get(col, "")
-
-            item["match_type"] = "exact"
-            item["matched_column"] = "TRAILER NO"
-
-            exact_results.append(item)
+            exact_results.append(build_item(row, "exact", "TRAILER"))
 
             continue
 
@@ -167,15 +203,7 @@ def search_excel(keyword):
 
         if truck_match == "partial":
 
-            item = {}
-
-            for col in DISPLAY_COLUMNS:
-                item[col] = row.get(col, "")
-
-            item["match_type"] = "partial"
-            item["matched_column"] = "TRUCK NO"
-
-            partial_results.append(item)
+            partial_results.append(build_item(row, "partial", "TRUCK"))
 
             continue
 
@@ -186,15 +214,7 @@ def search_excel(keyword):
 
         if trailer_match == "partial":
 
-            item = {}
-
-            for col in DISPLAY_COLUMNS:
-                item[col] = row.get(col, "")
-
-            item["match_type"] = "partial"
-            item["matched_column"] = "TRAILER NO"
-
-            partial_results.append(item)
+            partial_results.append(build_item(row, "partial", "TRAILER"))
 
             continue
 
@@ -205,15 +225,7 @@ def search_excel(keyword):
 
         if transport_match:
 
-            item = {}
-
-            for col in DISPLAY_COLUMNS:
-                item[col] = row.get(col, "")
-
-            item["match_type"] = "transportor"
-            item["matched_column"] = "TRANSPORTOR"
-
-            partial_results.append(item)
+            partial_results.append(build_item(row, "transportor", "TRANSPORTOR"))
 
             continue
 
@@ -239,13 +251,15 @@ def index():
 
         total_records=len(df),
 
-        columns=DISPLAY_COLUMNS
+        columns=DISPLAY_COLUMNS,
+
+        status_tabs=STATUS_TABS
 
     )
 
 
 # ==========================================================
-# AJAX SEARCH
+# AJAX SEARCH / LIST / FILTER
 # ==========================================================
 
 @app.route("/search")
@@ -253,12 +267,15 @@ def search():
 
     keyword = request.args.get("q", "").strip()
 
-    if keyword == "":
-        return jsonify([])
+    status_filter = request.args.get("status", "All").strip()
 
-    results = search_excel(keyword)
+    if status_filter not in STATUS_TABS:
+        status_filter = "All"
+
+    results = search_excel(keyword, status_filter)
 
     return jsonify(results)
+
 # ==========================================================
 # DOWNLOAD SEARCH RESULT
 # ==========================================================
@@ -268,8 +285,13 @@ def download():
 
     keyword = request.args.get("q", "").strip()
 
-    if keyword == "":
-        return jsonify({"error": "Search keyword required"}), 400
+    status_filter = request.args.get("status", "All").strip()
+
+    if status_filter not in STATUS_TABS:
+        status_filter = "All"
+
+    if keyword == "" and status_filter == "All":
+        return jsonify({"error": "Search keyword or filter required"}), 400
 
     df = load_excel()
 
@@ -279,12 +301,16 @@ def download():
 
     for _, row in df.iterrows():
 
-        truck = normalize(row.get("TRUCK NO", ""))
-        trailer = normalize(row.get("TRAILER NO", ""))
+        if status_filter != "All" and compute_status(row) != status_filter:
+            continue
+
+        truck = normalize(row.get("TRUCK", ""))
+        trailer = normalize(row.get("TRAILER", ""))
         transportor = normalize(row.get("TRANSPORTOR", ""))
 
         if (
-            keyword_normalized in truck
+            keyword_normalized == ""
+            or keyword_normalized in truck
             or keyword_normalized in trailer
             or keyword_normalized in transportor
         ):
@@ -305,10 +331,12 @@ def download():
 
     output.seek(0)
 
+    label = keyword if keyword else status_filter.replace(" ", "_")
+
     return send_file(
         output,
         as_attachment=True,
-        download_name=f"Truck_Search_{keyword}.xlsx",
+        download_name=f"Truck_Search_{label}.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
