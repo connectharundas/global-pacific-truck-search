@@ -21,11 +21,18 @@ document.addEventListener("DOMContentLoaded", function () {
         "badge-color-5"
     ];
 
+    const STATUS_BADGE_MAP = {
+        "RECEIVED": "badge-color-received",
+        "RECIEVED": "badge-color-received",
+        "SUBMITTED": "badge-color-submitted",
+        "ALREADY HAVING": "badge-color-already-having"
+    };
+
     function badgeClassFor(status) {
         const normalized = status.trim().toUpperCase();
 
-        if (normalized === "RECEIVED" || normalized === "RECIEVED") {
-            return "badge-color-received";
+        if (STATUS_BADGE_MAP[normalized]) {
+            return STATUS_BADGE_MAP[normalized];
         }
 
         let hash = 0;
@@ -33,6 +40,17 @@ document.addEventListener("DOMContentLoaded", function () {
             hash = (hash * 31 + status.charCodeAt(i)) >>> 0;
         }
         return BADGE_PALETTE[hash % BADGE_PALETTE.length];
+    }
+
+    function gatePassClassFor(dateStr) {
+        if (!dateStr) {
+            return "";
+        }
+        const parsed = new Date(dateStr);
+        if (isNaN(parsed.getTime())) {
+            return "";
+        }
+        return parsed.getTime() < Date.now() ? "gatepass-expired" : "gatepass-valid";
     }
 
     function renderCards(rows) {
@@ -52,15 +70,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const status = row["STATUS"] || "-";
             const statusClass = badgeClassFor(status);
             const isExact = row["match_type"] === "exact";
-            const gatePass = row["ALL_FIELDS"] && row["ALL_FIELDS"]["GATE PASS EXPIRE DATE"]
-                ? row["ALL_FIELDS"]["GATE PASS EXPIRE DATE"]
-                : "-";
+            const gatePassRaw = row["ALL_FIELDS"] ? row["ALL_FIELDS"]["GATE PASS EXPIRE DATE"] : "";
+            const gatePassClass = gatePassClassFor(gatePassRaw);
 
             html += `
                 <div class="truck-card${isExact ? " match-exact" : ""}" data-row-index="${index}">
                     <div class="truck-card-top">
                         <div class="truck-no">${row["TRUCK"] || ""}</div>
-                        <div class="truck-gatepass">${gatePass}</div>
+                        <span class="status-badge ${statusClass}">${status}</span>
                     </div>
                     <div class="trailer-no">Trailer ${row["TRAILER"] || "-"}</div>
                     <div class="truck-card-grid">
@@ -81,17 +98,15 @@ document.addEventListener("DOMContentLoaded", function () {
                             <div class="field-value">${row["SUB"] || "-"}</div>
                         </div>
                         <div>
-                            <div class="field-label">Doc Rcvd</div>
-                            <div class="field-value">${row["DOC RCVD DATE"] || "-"}</div>
+                            <div class="field-label">Gate Pass Expiry</div>
+                            <div class="field-value ${gatePassClass}">${gatePassRaw || "-"}</div>
                         </div>
                         <div>
                             <div class="field-label">Reached</div>
                             <div class="field-value">${row["REACHED"] || "-"}</div>
                         </div>
                     </div>
-                    <div class="truck-card-badges">
-                        <span class="status-badge ${statusClass}">${status}</span>
-                    </div>
+                    <div class="truck-card-hint">Tap to view more details</div>
                 </div>
             `;
 

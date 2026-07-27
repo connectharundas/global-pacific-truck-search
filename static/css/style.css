@@ -235,18 +235,6 @@ body {
     color: #16305e;
 }
 
-.truck-gatepass {
-    flex: 0 0 auto;
-    background: #e0ecff;
-    color: #2563eb;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 999px;
-    text-align: right;
-    white-space: nowrap;
-}
-
 .trailer-no {
     font-size: 13px;
     color: #94a3b8;
@@ -277,18 +265,31 @@ body {
     color: #1f2937;
 }
 
-.truck-card-badges {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+.gatepass-expired {
+    color: #dc2626;
+}
+
+.gatepass-valid {
+    color: #16a34a;
+}
+
+.truck-card-hint {
+    font-size: 12px;
+    color: #94a3b8;
+    text-align: center;
+    padding-top: 10px;
+    margin-top: 10px;
+    border-top: 1px solid #eef1f5;
 }
 
 .status-badge {
     display: inline-block;
+    flex: 0 0 auto;
     font-size: 12px;
     font-weight: 700;
     padding: 5px 12px;
     border-radius: 999px;
+    white-space: nowrap;
 }
 
 .badge-color-1 {
@@ -319,6 +320,16 @@ body {
 .badge-color-received {
     background: #dcfce7;
     color: #15803d;
+}
+
+.badge-color-submitted {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.badge-color-already-having {
+    background: #dbeafe;
+    color: #1d4ed8;
 }
 
 
