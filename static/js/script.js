@@ -22,6 +22,12 @@ document.addEventListener("DOMContentLoaded", function () {
     ];
 
     function badgeClassFor(status) {
+        const normalized = status.trim().toUpperCase();
+
+        if (normalized === "RECEIVED" || normalized === "RECIEVED") {
+            return "badge-color-received";
+        }
+
         let hash = 0;
         for (let i = 0; i < status.length; i++) {
             hash = (hash * 31 + status.charCodeAt(i)) >>> 0;

@@ -316,6 +316,11 @@ body {
     color: #be185d;
 }
 
+.badge-color-received {
+    background: #dcfce7;
+    color: #15803d;
+}
+
 
 /* ==========================================
    MATCH HIGHLIGHT
