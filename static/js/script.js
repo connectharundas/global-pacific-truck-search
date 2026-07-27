@@ -53,6 +53,13 @@ document.addEventListener("DOMContentLoaded", function () {
         return parsed.getTime() < Date.now() ? "gatepass-expired" : "gatepass-valid";
     }
 
+    function dateOnly(dateStr) {
+        if (!dateStr) {
+            return "";
+        }
+        return String(dateStr).trim().split(" ")[0];
+    }
+
     function renderCards(rows) {
 
         currentRows = rows;
@@ -73,8 +80,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const gatePassRaw = row["ALL_FIELDS"] ? row["ALL_FIELDS"]["GATE PASS EXPIRE DATE"] : "";
             const gatePassClass = gatePassClassFor(gatePassRaw);
 
+            const delay = Math.min(index, 10) * 0.035;
+
             html += `
-                <div class="truck-card${isExact ? " match-exact" : ""}" data-row-index="${index}">
+                <div class="truck-card${isExact ? " match-exact" : ""}" data-row-index="${index}" style="animation-delay:${delay}s">
                     <div class="truck-card-top">
                         <div class="truck-no">${row["TRUCK"] || ""}</div>
                         <span class="status-badge ${statusClass}">${status}</span>
@@ -99,7 +108,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         </div>
                         <div>
                             <div class="field-label">Gate Pass Expiry</div>
-                            <div class="field-value ${gatePassClass}">${gatePassRaw || "-"}</div>
+                            <div class="field-value ${gatePassClass}">${dateOnly(gatePassRaw) || "-"}</div>
                         </div>
                         <div>
                             <div class="field-label">Reached</div>
@@ -183,10 +192,11 @@ document.addEventListener("DOMContentLoaded", function () {
         let html = "";
 
         keys.forEach(function (key) {
+            const value = key === "GATE PASS EXPIRE DATE" ? dateOnly(fields[key]) : fields[key];
             html += `
                 <div class="detail-row">
                     <div class="detail-label">${key}</div>
-                    <div class="detail-value">${fields[key] || "-"}</div>
+                    <div class="detail-value">${value || "-"}</div>
                 </div>
             `;
         });

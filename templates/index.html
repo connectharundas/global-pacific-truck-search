@@ -9,27 +9,46 @@
 
     <title>Global Pacific Truck Search</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
 </head>
 
 <body>
 
+<div class="bg-decor" aria-hidden="true"></div>
+
 <div class="app">
 
     <!-- HEADER -->
     <header class="app-header">
-        <div class="app-header-icon">🚛</div>
-        <div class="app-header-text">
-            <h1>Global Pacific Truck Search</h1>
-            <p>Live fleet &amp; shipment tracking</p>
+        <div class="app-header-row">
+            <div class="app-header-icon">🚛</div>
+            <div class="app-header-text">
+                <h1>Global Pacific Truck Search</h1>
+                <p>Live fleet &amp; shipment tracking</p>
+            </div>
+        </div>
+
+        <div class="stat-chips">
+            <div class="stat-chip">
+                <span class="stat-chip-value" id="totalRecords">{{ total_records }}</span>
+                <span class="stat-chip-label">Total Records</span>
+            </div>
+            <div class="stat-chip stat-chip-accent">
+                <span class="stat-chip-value" id="resultCount">0</span>
+                <span class="stat-chip-label">Results Found</span>
+            </div>
         </div>
     </header>
 
     <main class="app-body">
 
-        <!-- SEARCH -->
-        <div class="search-row">
+        <!-- SEARCH + DOWNLOAD -->
+        <div class="toolbar">
             <div class="search-box">
                 <span class="search-icon">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -42,21 +61,14 @@
                     id="searchBox"
                     placeholder="Search truck no, trailer no, transporter...">
             </div>
-        </div>
 
-        <!-- DOWNLOAD -->
-        <button id="downloadBtn" class="download-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Download Result
-        </button>
-
-        <!-- SUMMARY -->
-        <div class="summary-row">
-            <div>Total Records: <span id="totalRecords">{{ total_records }}</span></div>
-            <div>Results Found: <span id="resultCount">0</span></div>
+            <button id="downloadBtn" class="download-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Download Result
+            </button>
         </div>
 
         <!-- FILTER TABS -->
