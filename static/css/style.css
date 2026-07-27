@@ -215,6 +215,11 @@ body {
     border-radius: 14px;
     padding: 16px;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    cursor: pointer;
+}
+
+.truck-card:hover {
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.14);
 }
 
 .truck-card-top {
@@ -230,14 +235,16 @@ body {
     color: #16305e;
 }
 
-.truck-index {
+.truck-gatepass {
     flex: 0 0 auto;
     background: #e0ecff;
     color: #2563eb;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
-    padding: 3px 9px;
+    padding: 4px 10px;
     border-radius: 999px;
+    text-align: right;
+    white-space: nowrap;
 }
 
 .trailer-no {
@@ -284,24 +291,29 @@ body {
     border-radius: 999px;
 }
 
-.status-in-transit {
+.badge-color-1 {
     background: #fef3c7;
     color: #b45309;
 }
 
-.status-reached {
+.badge-color-2 {
     background: #dcfce7;
     color: #15803d;
 }
 
-.status-loaded {
+.badge-color-3 {
     background: #dbeafe;
     color: #1d4ed8;
 }
 
-.status-pending {
+.badge-color-4 {
     background: #f1f5f9;
     color: #64748b;
+}
+
+.badge-color-5 {
+    background: #fce7f3;
+    color: #be185d;
 }
 
 
@@ -321,5 +333,102 @@ body {
 @media (min-width: 600px) {
     .truck-card-grid {
         grid-template-columns: 1fr 1fr 1fr;
+    }
+}
+
+
+/* ==========================================
+   DRILL-DOWN MODAL
+========================================== */
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 100;
+}
+
+.modal-overlay.open {
+    display: flex;
+}
+
+.modal-sheet {
+    width: 100%;
+    max-width: 720px;
+    max-height: 85vh;
+    background: #fff;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border-bottom: 1px solid #eef1f5;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #16305e;
+}
+
+.modal-close {
+    border: none;
+    background: #f1f5f9;
+    color: #475569;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 16px 18px;
+    overflow-y: auto;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.detail-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: #94a3b8;
+    text-transform: uppercase;
+    flex: 0 0 42%;
+}
+
+.detail-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    text-align: right;
+    flex: 1;
+}
+
+@media (min-width: 600px) {
+    .modal-overlay {
+        align-items: center;
+    }
+    .modal-sheet {
+        border-radius: 16px;
+        max-width: 480px;
     }
 }

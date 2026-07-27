@@ -27,7 +27,18 @@ DISPLAY_COLUMNS = [
     "LOADED"
 ]
 
-STATUS_TABS = ["All", "In Transit", "Reached", "Loaded", "Pending"]
+def get_status_tabs(df):
+
+    if df.empty or "STATUS" not in df.columns:
+        return ["All"]
+
+    values = sorted({
+        str(v).strip()
+        for v in df["STATUS"].tolist()
+        if str(v).strip()
+    })
+
+    return ["All"] + values
 
 
 # ==========================================================
@@ -96,24 +107,6 @@ def get_match_type(keyword, value):
 
 
 # ==========================================================
-# COMPUTED STATUS (drives badges + filter tabs)
-# ==========================================================
-
-def compute_status(row):
-
-    if str(row.get("LOADED", "")).strip():
-        return "Loaded"
-
-    if str(row.get("REACHED", "")).strip():
-        return "Reached"
-
-    if str(row.get("STATUS", "")).strip().upper() == "SUBMITTED":
-        return "In Transit"
-
-    return "Pending"
-
-
-# ==========================================================
 # BUILD DISPLAY ITEM
 # ==========================================================
 
@@ -124,7 +117,8 @@ def build_item(row, match_type=None, matched_column=None):
     for col in DISPLAY_COLUMNS:
         item[col] = row.get(col, "")
 
-    item["COMPUTED_STATUS"] = compute_status(row)
+    # Full row (every column in the sheet) for the drill-down view
+    item["ALL_FIELDS"] = row.to_dict()
 
     if match_type:
         item["match_type"] = match_type
@@ -154,7 +148,7 @@ def search_excel(keyword, status_filter="All"):
 
     for _, row in df.iterrows():
 
-        if status_filter != "All" and compute_status(row) != status_filter:
+        if status_filter != "All" and str(row.get("STATUS", "")).strip() != status_filter:
             continue
 
         if keyword_normalized == "":
@@ -238,7 +232,7 @@ def index():
 
         columns=DISPLAY_COLUMNS,
 
-        status_tabs=STATUS_TABS
+        status_tabs=get_status_tabs(df)
 
     )
 
@@ -253,9 +247,6 @@ def search():
     keyword = request.args.get("q", "").strip()
 
     status_filter = request.args.get("status", "All").strip()
-
-    if status_filter not in STATUS_TABS:
-        status_filter = "All"
 
     results = search_excel(keyword, status_filter)
 
@@ -272,9 +263,6 @@ def download():
 
     status_filter = request.args.get("status", "All").strip()
 
-    if status_filter not in STATUS_TABS:
-        status_filter = "All"
-
     if keyword == "" and status_filter == "All":
         return jsonify({"error": "Search keyword or filter required"}), 400
 
@@ -286,7 +274,7 @@ def download():
 
     for _, row in df.iterrows():
 
-        if status_filter != "All" and compute_status(row) != status_filter:
+        if status_filter != "All" and str(row.get("STATUS", "")).strip() != status_filter:
             continue
 
         truck = normalize(row.get("TRUCK", ""))
