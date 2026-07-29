@@ -27,18 +27,40 @@ DISPLAY_COLUMNS = [
     "LOADED"
 ]
 
+LOADED_TAB = "LOADED"
+
+
 def get_status_tabs(df):
 
-    if df.empty or "STATUS" not in df.columns:
-        return ["All"]
+    tabs = ["All"]
 
-    values = sorted({
-        str(v).strip()
-        for v in df["STATUS"].tolist()
-        if str(v).strip()
-    })
+    if not df.empty and "STATUS" in df.columns:
+        values = sorted({
+            str(v).strip()
+            for v in df["STATUS"].tolist()
+            if str(v).strip()
+        })
+        tabs += values
 
-    return ["All"] + values
+    tabs.append(LOADED_TAB)
+
+    return tabs
+
+
+def date_only(value):
+
+    return str(value).strip().split(" ")[0]
+
+
+def row_matches_status(row, status_filter):
+
+    if status_filter == "All":
+        return True
+
+    if status_filter == LOADED_TAB:
+        return bool(str(row.get("LOADED", "")).strip())
+
+    return str(row.get("STATUS", "")).strip() == status_filter
 
 
 # ==========================================================
@@ -148,7 +170,7 @@ def search_excel(keyword, status_filter="All"):
 
     for _, row in df.iterrows():
 
-        if status_filter != "All" and str(row.get("STATUS", "")).strip() != status_filter:
+        if not row_matches_status(row, status_filter):
             continue
 
         if keyword_normalized == "":
@@ -263,8 +285,10 @@ def download():
 
     status_filter = request.args.get("status", "All").strip()
 
-    if keyword == "" and status_filter == "All":
-        return jsonify({"error": "Search keyword or filter required"}), 400
+    loaded_date = request.args.get("loaded_date", "").strip()
+
+    if keyword == "" and status_filter == "All" and loaded_date == "":
+        return jsonify({"error": "Search keyword, filter, or loaded date required"}), 400
 
     df = load_excel()
 
@@ -274,7 +298,10 @@ def download():
 
     for _, row in df.iterrows():
 
-        if status_filter != "All" and str(row.get("STATUS", "")).strip() != status_filter:
+        if not row_matches_status(row, status_filter):
+            continue
+
+        if loaded_date and date_only(row.get("LOADED", "")) != loaded_date:
             continue
 
         truck = normalize(row.get("TRUCK", ""))
@@ -302,7 +329,7 @@ def download():
 
     output.seek(0)
 
-    label = keyword if keyword else status_filter.replace(" ", "_")
+    label = keyword or loaded_date or status_filter.replace(" ", "_")
 
     return send_file(
         output,

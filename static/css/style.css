@@ -24,6 +24,20 @@
     --shadow-lg: 0 24px 48px -12px rgba(67, 56, 202, 0.28);
 }
 
+@media (prefers-color-scheme: dark) {
+    :root {
+        --ink: #eef0fa;
+        --muted: #9aa3bd;
+        --faint: #6b7390;
+        --line: #262c47;
+        --surface: #171b30;
+        --canvas: #0e1122;
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+        --shadow-md: 0 8px 24px -8px rgba(0, 0, 0, 0.55);
+        --shadow-lg: 0 24px 48px -12px rgba(0, 0, 0, 0.6);
+    }
+}
+
 body {
     margin: 0;
     background: var(--canvas);
@@ -167,6 +181,23 @@ body {
 
 
 /* ==========================================
+   STICKY TOOLBAR
+========================================== */
+
+.sticky-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--canvas);
+    padding-top: 4px;
+    margin: -4px -16px 0;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 4px;
+}
+
+
+/* ==========================================
    TOOLBAR (SEARCH + DOWNLOAD)
 ========================================== */
 
@@ -178,6 +209,7 @@ body {
 }
 
 .search-box {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -211,6 +243,31 @@ body {
 
 .search-box input::placeholder {
     color: var(--faint);
+}
+
+.search-clear {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 50%;
+    background: var(--canvas);
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.search-clear:hover {
+    background: #fee2e2;
+    color: var(--danger);
+}
+
+.search-box.has-value .search-clear {
+    display: flex;
 }
 
 
@@ -248,48 +305,186 @@ body {
 
 
 /* ==========================================
-   FILTER TABS
+   DOWNLOAD BY LOADED DATE
 ========================================== */
 
-.tabs-row {
+.loaded-download {
     display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    margin-bottom: 18px;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-.tabs-row::-webkit-scrollbar {
-    display: none;
-}
-
-.tab-btn {
-    flex: 0 0 auto;
-    border: 1px solid var(--line);
+    flex-direction: column;
+    gap: 10px;
     background: var(--surface);
-    color: var(--muted);
-    padding: 9px 17px;
-    border-radius: 999px;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.18s ease;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 13px 16px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
 }
 
-.tab-btn:hover {
-    border-color: #c7cef0;
+.loaded-download-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
     color: var(--ink);
 }
 
-.tab-btn.active {
-    background: linear-gradient(135deg, var(--brand-1), var(--brand-3));
-    border-color: transparent;
+.loaded-download-label svg {
+    color: var(--brand-1);
+    flex: 0 0 auto;
+}
+
+.loaded-download-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.loaded-download-controls input[type="date"] {
+    flex: 1;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 9px 10px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--ink);
+    background: var(--canvas);
+}
+
+.loaded-download-controls button {
+    flex: 0 0 auto;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 18px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
     color: #fff;
-    box-shadow: 0 8px 16px -6px rgba(67, 56, 202, 0.5);
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-3));
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.loaded-download-controls button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px -6px rgba(67, 56, 202, 0.45);
+}
+
+@media (min-width: 560px) {
+    .loaded-download {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .loaded-download-controls {
+        flex: 0 0 auto;
+    }
+    .loaded-download-controls input[type="date"] {
+        flex: 0 0 auto;
+    }
+}
+
+
+/* ==========================================
+   FILTER DROPDOWN
+========================================== */
+
+.filter-dropdown {
+    position: relative;
+    margin-bottom: 18px;
+}
+
+.filter-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    padding: 12px 14px;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.filter-dropdown-toggle:hover {
+    border-color: #c7cef0;
+}
+
+.filter-dropdown.open .filter-dropdown-toggle {
+    border-color: var(--brand-1);
+    box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.12), var(--shadow-sm);
+}
+
+.filter-dropdown-icon {
+    display: flex;
+    color: var(--brand-1);
+    flex: 0 0 auto;
+}
+
+#filterDropdownLabel {
+    flex: 1;
+    text-align: left;
+}
+
+.filter-dropdown-chevron {
+    flex: 0 0 auto;
+    color: var(--faint);
+    transition: transform 0.18s ease;
+}
+
+.filter-dropdown.open .filter-dropdown-chevron {
+    transform: rotate(180deg);
+}
+
+.filter-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    z-index: 30;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow-md);
+    padding: 6px;
+    max-height: 280px;
+    overflow-y: auto;
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.filter-dropdown.open .filter-dropdown-menu {
+    display: flex;
+}
+
+.filter-option {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    padding: 10px 12px;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.filter-option:hover {
+    background: var(--canvas);
+    color: var(--ink);
+}
+
+.filter-option.active {
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-3));
+    color: #fff;
 }
 
 
@@ -304,10 +499,51 @@ body {
 }
 
 .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
     text-align: center;
     color: var(--faint);
     padding: 56px 20px;
     font-size: 14px;
+}
+
+.empty-state-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--faint);
+    box-shadow: var(--shadow-sm);
+}
+
+.load-more-btn {
+    width: 100%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--brand-1);
+    padding: 13px;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.load-more-btn:hover {
+    background: var(--canvas);
+    transform: translateY(-1px);
+}
+
+.load-more-btn:active {
+    transform: translateY(0) scale(0.99);
 }
 
 .truck-card {
@@ -320,6 +556,10 @@ body {
     cursor: pointer;
     transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
     animation: card-in 0.35s ease both;
+}
+
+.truck-card:active {
+    transform: scale(0.985);
 }
 
 .truck-card::before {
@@ -475,6 +715,16 @@ body {
 .badge-color-already-having {
     background: #dbeafe;
     color: #1d4ed8;
+}
+
+.badge-color-rejected {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.badge-color-not-valid {
+    background: #f1f5f9;
+    color: #64748b;
 }
 
 
@@ -640,4 +890,80 @@ body {
         border-radius: 22px;
         max-width: 480px;
     }
+}
+
+
+/* ==========================================
+   SKELETON LOADING STATE
+========================================== */
+
+.skeleton-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 17px 17px 17px 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.skeleton-line {
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--line) 25%, rgba(148, 163, 184, 0.25) 37%, var(--line) 63%);
+    background-size: 400% 100%;
+    animation: skeleton-shimmer 1.4s ease infinite;
+}
+
+.skeleton-line.w-40 { width: 40%; height: 18px; margin-bottom: 10px; }
+.skeleton-line.w-25 { width: 25%; margin-bottom: 16px; }
+.skeleton-line.w-70 { width: 70%; margin-bottom: 6px; }
+.skeleton-line.w-50 { width: 50%; }
+
+.skeleton-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    padding-top: 13px;
+    border-top: 1px dashed var(--line);
+}
+
+@keyframes skeleton-shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+}
+
+
+/* ==========================================
+   SCROLL TO TOP
+========================================== */
+
+.scroll-top-btn {
+    position: fixed;
+    right: 20px;
+    bottom: 24px;
+    z-index: 50;
+    width: 46px;
+    height: 46px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-3));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 10px 24px -6px rgba(67, 56, 202, 0.55);
+    opacity: 0;
+    transform: translateY(12px) scale(0.9);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.scroll-top-btn.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.scroll-top-btn:active {
+    transform: scale(0.92);
 }
