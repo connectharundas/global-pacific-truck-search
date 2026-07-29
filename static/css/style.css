@@ -248,6 +248,86 @@ body {
 
 
 /* ==========================================
+   DOWNLOAD BY LOADED DATE
+========================================== */
+
+.loaded-download {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 13px 16px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
+}
+
+.loaded-download-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.loaded-download-label svg {
+    color: var(--brand-1);
+    flex: 0 0 auto;
+}
+
+.loaded-download-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.loaded-download-controls input[type="date"] {
+    flex: 1;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 9px 10px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--ink);
+    background: var(--canvas);
+}
+
+.loaded-download-controls button {
+    flex: 0 0 auto;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 18px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-3));
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.loaded-download-controls button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px -6px rgba(67, 56, 202, 0.45);
+}
+
+@media (min-width: 560px) {
+    .loaded-download {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .loaded-download-controls {
+        flex: 0 0 auto;
+    }
+    .loaded-download-controls input[type="date"] {
+        flex: 0 0 auto;
+    }
+}
+
+
+/* ==========================================
    FILTER TABS
 ========================================== */
 
@@ -475,6 +555,16 @@ body {
 .badge-color-already-having {
     background: #dbeafe;
     color: #1d4ed8;
+}
+
+.badge-color-rejected {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.badge-color-not-valid {
+    background: #f1f5f9;
+    color: #64748b;
 }
 
 

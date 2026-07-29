@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const resultList = document.getElementById("resultList");
     const resultCount = document.getElementById("resultCount");
     const downloadBtn = document.getElementById("downloadBtn");
+    const loadedDateInput = document.getElementById("loadedDateInput");
+    const loadedDownloadBtn = document.getElementById("loadedDownloadBtn");
     const tabButtons = document.querySelectorAll(".tab-btn");
     const modalOverlay = document.getElementById("detailModal");
     const modalBody = document.getElementById("detailModalBody");
@@ -25,7 +27,10 @@ document.addEventListener("DOMContentLoaded", function () {
         "RECEIVED": "badge-color-received",
         "RECIEVED": "badge-color-received",
         "SUBMITTED": "badge-color-submitted",
-        "ALREADY HAVING": "badge-color-already-having"
+        "ALREADY HAVING": "badge-color-already-having",
+        "ALREADY HAVE": "badge-color-already-having",
+        "REJECTED": "badge-color-rejected",
+        "NOT VALID": "badge-color-not-valid"
     };
 
     function badgeClassFor(status) {
@@ -79,6 +84,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const isExact = row["match_type"] === "exact";
             const gatePassRaw = row["ALL_FIELDS"] ? row["ALL_FIELDS"]["GATE PASS EXPIRE DATE"] : "";
             const gatePassClass = gatePassClassFor(gatePassRaw);
+            const loadedRaw = row["LOADED"] || "";
+            const loadedClass = loadedRaw ? "gatepass-valid" : "";
 
             const delay = Math.min(index, 10) * 0.035;
 
@@ -113,6 +120,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         <div>
                             <div class="field-label">Reached</div>
                             <div class="field-value">${row["REACHED"] || "-"}</div>
+                        </div>
+                        <div>
+                            <div class="field-label">Loaded</div>
+                            <div class="field-value ${loadedClass}">${dateOnly(loadedRaw) || "-"}</div>
                         </div>
                     </div>
                     <div class="truck-card-hint">Tap to view more details</div>
@@ -178,6 +189,22 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         window.location.href = `/download?q=${encodeURIComponent(keyword)}&status=${encodeURIComponent(currentStatus)}`;
+    });
+
+    // ============================
+    // DOWNLOAD BY LOADED DATE
+    // ============================
+
+    loadedDownloadBtn.addEventListener("click", function () {
+
+        const loadedDate = loadedDateInput.value;
+
+        if (!loadedDate) {
+            alert("Please select a loaded date.");
+            return;
+        }
+
+        window.location.href = `/download?loaded_date=${encodeURIComponent(loadedDate)}`;
     });
 
     // ============================
