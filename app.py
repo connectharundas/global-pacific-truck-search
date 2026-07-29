@@ -27,7 +27,7 @@ DISPLAY_COLUMNS = [
     "LOADED"
 ]
 
-LOADED_TAB = "Loaded"
+LOADED_TAB = "LOADED"
 
 
 def get_status_tabs(df):
