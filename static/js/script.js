@@ -160,8 +160,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         <div class="field-value ${gatePassClass}">${dateOnly(gatePassRaw) || "-"}</div>
                     </div>
                     <div>
-                        <div class="field-label">Reached</div>
-                        <div class="field-value">${row["REACHED"] || "-"}</div>
+                        <div class="field-label">Token</div>
+                        <div class="field-value">${(row["ALL_FIELDS"] && row["ALL_FIELDS"]["TOKEN"]) || "-"}</div>
                     </div>
                     <div>
                         <div class="field-label">Loaded</div>
