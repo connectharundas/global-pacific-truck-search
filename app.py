@@ -1,240 +1,186 @@
-from flask import Flask, render_template, request, jsonify, send_file
-import pandas as pd
 import os
+from functools import wraps
+
+import pandas as pd
 import io
-import re
+
+from flask import Flask, render_template, request, jsonify, send_file, session, redirect, url_for, flash
+from dotenv import load_dotenv
+
+from models import db, Record, DISPLAY_COLUMNS
+from utils import normalize, get_match_type, date_only, LOADED_TAB
+from ingest import replace_all_records
+
+load_dotenv()
 
 app = Flask(__name__)
 
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["DATABASE_URL"]
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB upload limit
+
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+
+db.init_app(app)
+
+
 # ==========================================================
-# CONFIGURATION
+# STATUS TABS
 # ==========================================================
 
-EXCEL_FILE = "data/sampledata.xlsx"
-
-# Columns shown in the website
-DISPLAY_COLUMNS = [
-    "SL NO",
-    "DOC RCVD DATE",
-    "DRIVER NAME",
-    "ID NO",
-    "TRUCK",
-    "TRAILER",
-    "TRANSPORTOR",
-    "SUB",
-    "STATUS",
-    "REACHED",
-    "LOADED"
-]
-
-LOADED_TAB = "LOADED"
-
-
-def get_status_tabs(df):
+def get_status_tabs():
 
     tabs = ["All"]
 
-    if not df.empty and "STATUS" in df.columns:
-        values = sorted({
-            str(v).strip()
-            for v in df["STATUS"].tolist()
-            if str(v).strip()
-        })
-        tabs += values
+    values = (
+        db.session.query(Record.status)
+        .filter(Record.status != "")
+        .distinct()
+        .order_by(Record.status)
+        .all()
+    )
+
+    tabs += [v[0] for v in values]
 
     tabs.append(LOADED_TAB)
 
     return tabs
 
 
-def date_only(value):
-
-    return str(value).strip().split(" ")[0]
-
-
-def row_matches_status(row, status_filter):
+def row_matches_status(record, status_filter):
 
     if status_filter == "All":
         return True
 
     if status_filter == LOADED_TAB:
-        return bool(str(row.get("LOADED", "")).strip())
+        return bool(str(record.loaded or "").strip())
 
-    return str(row.get("STATUS", "")).strip() == status_filter
-
-
-# ==========================================================
-# LOAD EXCEL
-# ==========================================================
-
-def load_excel():
-
-    if not os.path.exists(EXCEL_FILE):
-        return pd.DataFrame()
-
-    df = pd.read_excel(
-        EXCEL_FILE,
-        dtype=str
-    )
-
-    df.fillna("", inplace=True)
-
-    # Remove unwanted spaces from column names
-    df.columns = (
-        df.columns
-        .str.replace("\n", " ", regex=False)
-        .str.replace("\r", " ", regex=False)
-        .str.strip()
-    )
-
-    return df
+    return str(record.status or "").strip() == status_filter
 
 
 # ==========================================================
-# NORMALIZE
+# SEARCH + FILTER
 # ==========================================================
 
-def normalize(value):
-
-    value = str(value).upper().strip()
-
-    value = value.replace(" ", "")
-
-    # Remove leading hyphen
-    value = re.sub(r"^-+", "", value)
-
-    # Remove trailing hyphen
-    value = re.sub(r"-+$", "", value)
-
-    return value
-
-
-# ==========================================================
-# MATCH TYPE
-# ==========================================================
-
-def get_match_type(keyword, value):
-
-    keyword = normalize(keyword)
-
-    value = normalize(value)
-
-    if keyword == value:
-        return "exact"
-
-    if keyword in value:
-        return "partial"
-
-    return None
-
-
-# ==========================================================
-# BUILD DISPLAY ITEM
-# ==========================================================
-
-def build_item(row, match_type=None, matched_column=None):
-
-    item = {}
-
-    for col in DISPLAY_COLUMNS:
-        item[col] = row.get(col, "")
-
-    # Full row (every column in the sheet) for the drill-down view
-    item["ALL_FIELDS"] = row.to_dict()
-
-    if match_type:
-        item["match_type"] = match_type
-
-    if matched_column:
-        item["matched_column"] = matched_column
-
-    return item
-
-
-# ==========================================================
-# SEARCH + FILTER EXCEL
-# ==========================================================
-
-def search_excel(keyword, status_filter="All"):
+def search_records(keyword, status_filter="All"):
 
     keyword_normalized = normalize(keyword)
 
-    df = load_excel()
+    query = Record.query
 
-    if df.empty:
-        return []
+    if status_filter not in ("All", LOADED_TAB):
+        query = query.filter(Record.status == status_filter)
 
     exact_results = []
-
     partial_results = []
 
-    for _, row in df.iterrows():
+    for record in query.all():
 
-        if not row_matches_status(row, status_filter):
+        if not row_matches_status(record, status_filter):
             continue
 
         if keyword_normalized == "":
-
-            exact_results.append(build_item(row))
-
+            exact_results.append(record.to_display_dict())
             continue
 
-        truck = str(row.get("TRUCK", ""))
-
-        trailer = str(row.get("TRAILER", ""))
-
-        truck_match = get_match_type(keyword, truck)
-
-        trailer_match = get_match_type(keyword, trailer)
-
-        # ==================================================
-        # EXACT TRUCK MATCH
-        # ==================================================
+        truck_match = get_match_type(keyword, record.truck or "")
+        trailer_match = get_match_type(keyword, record.trailer or "")
 
         if truck_match == "exact":
-
-            exact_results.append(build_item(row, "exact", "TRUCK"))
-
+            item = record.to_display_dict()
+            item["match_type"] = "exact"
+            item["matched_column"] = "TRUCK"
+            exact_results.append(item)
             continue
-
-
-        # ==================================================
-        # EXACT TRAILER MATCH
-        # ==================================================
 
         if trailer_match == "exact":
-
-            exact_results.append(build_item(row, "exact", "TRAILER"))
-
+            item = record.to_display_dict()
+            item["match_type"] = "exact"
+            item["matched_column"] = "TRAILER"
+            exact_results.append(item)
             continue
-
-
-        # ==================================================
-        # PARTIAL TRUCK MATCH
-        # ==================================================
 
         if truck_match == "partial":
-
-            partial_results.append(build_item(row, "partial", "TRUCK"))
-
+            item = record.to_display_dict()
+            item["match_type"] = "partial"
+            item["matched_column"] = "TRUCK"
+            partial_results.append(item)
             continue
-
-
-        # ==================================================
-        # PARTIAL TRAILER MATCH
-        # ==================================================
 
         if trailer_match == "partial":
-
-            partial_results.append(build_item(row, "partial", "TRAILER"))
-
+            item = record.to_display_dict()
+            item["match_type"] = "partial"
+            item["matched_column"] = "TRAILER"
+            partial_results.append(item)
             continue
 
+    return exact_results + partial_results
 
-    # Exact matches first
-    results = exact_results + partial_results
 
-    return results
+# ==========================================================
+# ADMIN AUTH
+# ==========================================================
+
+def login_required(view):
+
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+
+        if not session.get("admin"):
+            return redirect(url_for("admin_login"))
+
+        return view(*args, **kwargs)
+
+    return wrapped
+
+
+@app.route("/admin/login", methods=["GET", "POST"])
+def admin_login():
+
+    if request.method == "POST":
+
+        password = request.form.get("password", "")
+
+        if ADMIN_PASSWORD and password == ADMIN_PASSWORD:
+            session["admin"] = True
+            return redirect(url_for("admin_upload"))
+
+        flash("Incorrect password")
+
+    return render_template("admin_login.html")
+
+
+@app.route("/admin/logout")
+def admin_logout():
+
+    session.pop("admin", None)
+
+    return redirect(url_for("admin_login"))
+
+
+@app.route("/admin/upload", methods=["GET", "POST"])
+@login_required
+def admin_upload():
+
+    if request.method == "POST":
+
+        file = request.files.get("file")
+
+        if not file or not file.filename.lower().endswith(".xlsx"):
+            flash("Please upload a valid .xlsx file")
+            return redirect(url_for("admin_upload"))
+
+        try:
+            count = replace_all_records(file.stream)
+            flash(f"Uploaded successfully — {count} records loaded.")
+        except Exception as exc:
+            db.session.rollback()
+            flash(f"Upload failed: {exc}")
+
+        return redirect(url_for("admin_upload"))
+
+    return render_template("admin_upload.html", total_records=Record.query.count())
 
 
 # ==========================================================
@@ -244,17 +190,15 @@ def search_excel(keyword, status_filter="All"):
 @app.route("/")
 def index():
 
-    df = load_excel()
-
     return render_template(
 
         "index.html",
 
-        total_records=len(df),
+        total_records=Record.query.count(),
 
         columns=DISPLAY_COLUMNS,
 
-        status_tabs=get_status_tabs(df)
+        status_tabs=get_status_tabs()
 
     )
 
@@ -270,7 +214,7 @@ def search():
 
     status_filter = request.args.get("status", "All").strip()
 
-    results = search_excel(keyword, status_filter)
+    results = search_records(keyword, status_filter)
 
     return jsonify(results)
 
@@ -290,30 +234,32 @@ def download():
     if keyword == "" and status_filter == "All" and loaded_date == "":
         return jsonify({"error": "Search keyword, filter, or loaded date required"}), 400
 
-    df = load_excel()
-
     keyword_normalized = normalize(keyword)
+
+    query = Record.query
+
+    if status_filter not in ("All", LOADED_TAB):
+        query = query.filter(Record.status == status_filter)
 
     export_rows = []
 
-    for _, row in df.iterrows():
+    for record in query.all():
 
-        if not row_matches_status(row, status_filter):
+        if not row_matches_status(record, status_filter):
             continue
 
-        if loaded_date and date_only(row.get("LOADED", "")) != loaded_date:
+        if loaded_date and date_only(record.loaded or "") != loaded_date:
             continue
 
-        truck = normalize(row.get("TRUCK", ""))
-        trailer = normalize(row.get("TRAILER", ""))
+        truck = normalize(record.truck or "")
+        trailer = normalize(record.trailer or "")
 
         if (
             keyword_normalized == ""
             or keyword_normalized in truck
             or keyword_normalized in trailer
         ):
-
-            export_rows.append(row.to_dict())
+            export_rows.append(record.raw_data or {})
 
     export_df = pd.DataFrame(export_rows)
 
@@ -346,11 +292,9 @@ def download():
 @app.route("/total")
 def total():
 
-    df = load_excel()
-
     return jsonify({
 
-        "total_records": len(df)
+        "total_records": Record.query.count()
 
     })
 
@@ -362,15 +306,19 @@ def total():
 @app.route("/health")
 def health():
 
-    df = load_excel()
+    try:
+        db.session.execute(db.select(db.func.count()).select_from(Record))
+        db_status = "connected"
+    except Exception:
+        db_status = "unavailable"
 
     return jsonify({
 
         "status": "running",
 
-        "records": len(df),
+        "records": Record.query.count() if db_status == "connected" else None,
 
-        "excel_file": EXCEL_FILE
+        "database": db_status
 
     })
 

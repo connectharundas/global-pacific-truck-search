@@ -1,0 +1,77 @@
+.admin-wrap {
+    max-width: 420px;
+    margin: 80px auto;
+    padding: 32px;
+    background: var(--surface);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--line);
+}
+
+.admin-wrap h1 {
+    font-family: "Sora", sans-serif;
+    font-size: 1.3rem;
+    margin: 0 0 20px;
+    color: var(--ink);
+}
+
+.admin-wrap label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.admin-wrap input[type="password"],
+.admin-wrap input[type="file"] {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--canvas);
+    color: var(--ink);
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+}
+
+.admin-wrap button {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: none;
+    background: var(--brand-1);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.admin-wrap button:hover {
+    background: var(--brand-2);
+}
+
+.admin-flash {
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--brand-3);
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+}
+
+.admin-meta {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 16px;
+}
+
+.admin-links {
+    margin-top: 16px;
+    text-align: center;
+}
+
+.admin-links a {
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-decoration: none;
+}
