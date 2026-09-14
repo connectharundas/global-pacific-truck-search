@@ -86,6 +86,7 @@ def search_records(keyword, status_filter="All"):
 
         truck_match = get_match_type(keyword, record.truck or "")
         trailer_match = get_match_type(keyword, record.trailer or "")
+        id_match = get_match_type(keyword, record.id_no or "")
 
         if truck_match == "exact":
             item = record.to_display_dict()
@@ -101,6 +102,13 @@ def search_records(keyword, status_filter="All"):
             exact_results.append(item)
             continue
 
+        if id_match == "exact":
+            item = record.to_display_dict()
+            item["match_type"] = "exact"
+            item["matched_column"] = "ID NO"
+            exact_results.append(item)
+            continue
+
         if truck_match == "partial":
             item = record.to_display_dict()
             item["match_type"] = "partial"
@@ -112,6 +120,13 @@ def search_records(keyword, status_filter="All"):
             item = record.to_display_dict()
             item["match_type"] = "partial"
             item["matched_column"] = "TRAILER"
+            partial_results.append(item)
+            continue
+
+        if id_match == "partial":
+            item = record.to_display_dict()
+            item["match_type"] = "partial"
+            item["matched_column"] = "ID NO"
             partial_results.append(item)
             continue
 
