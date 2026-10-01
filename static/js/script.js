@@ -68,12 +68,12 @@ document.addEventListener("DOMContentLoaded", function () {
         return parsed.getTime() < Date.now() ? "gatepass-expired" : "gatepass-valid";
     }
 
-    const OMAN_NATIONALITIES = ["OMAN", "OMANI"];
+    const OMANI_NATIONALITY = "OMANI";
 
     function isOmanNational(row) {
         const fields = row["ALL_FIELDS"] || {};
         const nationality = String(fields["NATIONALITY"] || "").trim().toUpperCase();
-        return OMAN_NATIONALITIES.includes(nationality);
+        return nationality === OMANI_NATIONALITY;
     }
 
     function dateOnly(dateStr) {
