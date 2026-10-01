@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentRows = [];
     let renderedCount = 0;
     let debounceTimer = null;
+    let latestRequestId = 0;
 
     const BADGE_PALETTE = [
         "badge-color-1",
@@ -254,14 +255,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
         renderSkeleton(4);
 
+        const requestId = ++latestRequestId;
+
         fetch(`/search?q=${encodeURIComponent(keyword)}&status=${encodeURIComponent(currentStatus)}`)
             .then(function (res) {
                 return res.json();
             })
             .then(function (data) {
+                if (requestId !== latestRequestId) {
+                    return;
+                }
                 renderCards(data);
             })
             .catch(function () {
+                if (requestId !== latestRequestId) {
+                    return;
+                }
                 resultList.innerHTML = `<div class="empty-state">Error loading data.</div>`;
             });
     }

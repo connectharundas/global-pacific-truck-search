@@ -1,3 +1,5 @@
+import io
+
 import pandas as pd
 
 from models import Record, db
@@ -24,7 +26,7 @@ def replace_all_records(file_stream):
     Returns the number of rows inserted.
     """
 
-    df = pd.read_excel(file_stream, dtype=str)
+    df = pd.read_excel(io.BytesIO(file_stream.read()), dtype=str)
 
     df.fillna("", inplace=True)
 
