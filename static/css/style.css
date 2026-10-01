@@ -744,6 +744,38 @@ body {
 
 
 /* ==========================================
+   OMAN NATIONALITY HIGHLIGHT
+========================================== */
+
+.truck-card.nationality-oman {
+    background: linear-gradient(0deg, rgba(220, 38, 38, 0.07), rgba(220, 38, 38, 0.07)), var(--surface);
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.16), var(--shadow-sm);
+}
+
+.truck-card.nationality-oman:hover {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.22), var(--shadow-md);
+}
+
+.truck-card.nationality-oman::before {
+    background: linear-gradient(180deg, #ef4444, #b91c1c);
+    opacity: 1;
+}
+
+.truck-card.nationality-oman .truck-card-grid,
+.truck-card.nationality-oman .truck-card-hint {
+    border-color: rgba(220, 38, 38, 0.22);
+}
+
+@media (prefers-color-scheme: dark) {
+    .truck-card.nationality-oman {
+        background: linear-gradient(0deg, rgba(239, 68, 68, 0.13), rgba(239, 68, 68, 0.13)), var(--surface);
+    }
+}
+
+
+/* ==========================================
    RESPONSIVE
 ========================================== */
 

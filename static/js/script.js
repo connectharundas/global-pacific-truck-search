@@ -68,6 +68,14 @@ document.addEventListener("DOMContentLoaded", function () {
         return parsed.getTime() < Date.now() ? "gatepass-expired" : "gatepass-valid";
     }
 
+    const OMAN_NATIONALITIES = ["OMAN", "OMANI"];
+
+    function isOmanNational(row) {
+        const fields = row["ALL_FIELDS"] || {};
+        const nationality = String(fields["NATIONALITY"] || "").trim().toUpperCase();
+        return OMAN_NATIONALITIES.includes(nationality);
+    }
+
     function dateOnly(dateStr) {
         if (!dateStr) {
             return "";
@@ -124,6 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const status = row["STATUS"] || "-";
         const statusClass = badgeClassFor(status);
         const isExact = row["match_type"] === "exact";
+        const isOman = isOmanNational(row);
         const gatePassRaw = row["ALL_FIELDS"] ? row["ALL_FIELDS"]["GATE PASS EXPIRE DATE"] : "";
         const gatePassClass = gatePassClassFor(gatePassRaw);
         const loadedRaw = row["LOADED"] || "";
@@ -132,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const delay = Math.min(index % PAGE_SIZE, 10) * 0.035;
 
         return `
-            <div class="truck-card${isExact ? " match-exact" : ""}" data-row-index="${index}" style="animation-delay:${delay}s">
+            <div class="truck-card${isExact ? " match-exact" : ""}${isOman ? " nationality-oman" : ""}" data-row-index="${index}" style="animation-delay:${delay}s">
                 <div class="truck-card-top">
                     <div class="truck-no">${row["TRUCK"] || ""}</div>
                     <span class="status-badge ${statusClass}">${status}</span>
