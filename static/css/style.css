@@ -14,7 +14,7 @@
     --surface: #ffffff;
     --canvas: #f3f4fb;
     --brand-1: #4338ca;
-    --brand-2: #6d28d9;
+    --brand-2: #0b3c5d;
     --brand-3: #2563eb;
     --accent: #f59e0b;
     --success: #16a34a;
@@ -110,8 +110,8 @@ body {
     height: 50px;
     flex: 0 0 auto;
     border-radius: 16px;
-    background: #0b3a5c;
-    box-shadow: 0 8px 18px -4px rgba(11, 58, 92, 0.55);
+    background: #0b3c5d;
+    box-shadow: 0 8px 18px -4px rgba(11, 60, 93, 0.55);
     overflow: hidden;
     display: flex;
     align-items: center;
