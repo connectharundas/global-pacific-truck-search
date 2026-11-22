@@ -1,5 +1,5 @@
 [Unit]
-Description=Gunicorn - Global Pacific Truck Search
+Description=Gunicorn - Global Horizon Truck Search
 After=network.target mysql.service
 
 [Service]
